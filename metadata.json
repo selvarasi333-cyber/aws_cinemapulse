@@ -1,0 +1,8 @@
+
+{
+  "name": "CinemaPulse - Premium OTT Feedback Analytics",
+  "description": "A cinematic, neon-themed OTT analytics platform for real-time customer feedback simulation. Features dedicated dashboards for Users, Producers, Analysts, and Admins with live metrics and premium visualizations.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
