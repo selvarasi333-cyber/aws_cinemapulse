@@ -15,6 +15,10 @@ CORS(app, supports_credentials=True)
 # AWS Configuration
 REGION = 'us-east-1'
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
+sns = boto3.client('sns', region_name=REGION) # Initializing SNS Client
+
+# Replace this with your actual SNS Topic ARN from the AWS Console
+SNS_TOPIC_ARN = os.environ.get('arn:aws:sns:us-east-1:545009822481:cinemapulse')
 
 # DynamoDB Tables
 users_table = dynamodb.Table('Users')
@@ -94,6 +98,23 @@ def handle_feedback():
                 'sentiment': data['sentiment']
             }
             feedback_table.put_item(Item=feedback_item)
+
+            # --- SNS Notification Code ---
+            notification_message = (
+                f"New Feedback Received!\n"
+                f"User: {data['userName']}\n"
+                f"Rating: {data['rating']}/5\n"
+                f"Comment: {data['text']}\n"
+                f"Sentiment: {data['sentiment']}"
+            )
+            
+            sns.publish(
+                TopicArn=SNS_TOPIC_ARN,
+                Message=notification_message,
+                Subject="New CinemaPulse Movie Feedback"
+            )
+            # ------------------------------
+
             return jsonify({'status': 'success'})
         
         # GET Feedback
@@ -126,7 +147,5 @@ def modify_feedback(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Start App
 if __name__ == '__main__':
-    # Use 0.0.0.0 to allow external access via EC2 Public IP
     app.run(host='0.0.0.0', port=5000)
